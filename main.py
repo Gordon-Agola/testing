@@ -1,16 +1,12 @@
 # import the necessary packages
 from flask import Flask, render_template, Response,redirect,flash,url_for,request,jsonify
-from camera import VideoCamera
+# from camera import VideoCamera
 from datetime import datetime
-from flask_socketio import SocketIO, emit
-from io import StringIO 
-import io
-import base64
-import imutils
+
 import pandas as pd
 import numpy as np
-from PIL import Image
-import cv2
+# from PIL import Image
+# import cv2
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'

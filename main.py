@@ -37,7 +37,7 @@ def index():
     data1=data[data['Date']==str(fill_date)]
     
     
-    return data1
+    return str(data)
 # def gen(camera):
 #     while True:
 #         #get camera frame

@@ -42,7 +42,7 @@ def index():
     data1=data[data['Date']==str(fill_date)]
     
     
-    return render_template('index.html')
+    return "Hello World"
 def gen(camera):
     while True:
         #get camera frame

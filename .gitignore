@@ -1,0 +1,5 @@
+_pycache_
+frontend
+node_modules
+package.json
+package-lock.json

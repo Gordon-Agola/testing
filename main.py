@@ -1,47 +1,47 @@
 # import the necessary packages
 from flask import Flask, render_template, Response,redirect,flash,url_for,request,jsonify
-# from camera import VideoCamera
-# from datetime import datetime
-# from flask_socketio import SocketIO, emit
-# from io import StringIO 
-# import io
-# import base64
-# import imutils
-# import pandas as pd
-# import numpy as np
-# from PIL import Image
-# import cv2
+from camera import VideoCamera
+from datetime import datetime
+from flask_socketio import SocketIO, emit
+from io import StringIO 
+import io
+import base64
+import imutils
+import pandas as pd
+import numpy as np
+from PIL import Image
+import cv2
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
-# def hours(x):
-#     print(x['Time Out'])
-#     if(len(str(x['Time Out']))>5 ):
-#         t1 = datetime.strptime(str(x['Time In']), "%H:%M:%S")
+def hours(x):
+    print(x['Time Out'])
+    if(len(str(x['Time Out']))>5 ):
+        t1 = datetime.strptime(str(x['Time In']), "%H:%M:%S")
             
             
-#         t2 = datetime.strptime(str(x['Time Out']), "%H:%M:%S")
+        t2 = datetime.strptime(str(x['Time Out']), "%H:%M:%S")
             
 
-#             # get difference
-#         delta = t2 - t1
-#         seconds = delta.total_seconds() % (24 * 3600)
-#         hour = seconds // 3600
-#     else:
-#         hour = 0
+            # get difference
+        delta = t2 - t1
+        seconds = delta.total_seconds() % (24 * 3600)
+        hour = seconds // 3600
+    else:
+        hour = 0
     
-#     return hour
+    return hour
 
 @app.route('/')
 def index():
-    # data = pd.read_csv("Attendance/Attendance.csv")
-    # fill_date = datetime.today().strftime('%d-%m-%Y')
-    # data1=data[data['Date']==str(fill_date)]
+    data = pd.read_csv("Attendance/Attendance.csv")
+    fill_date = datetime.today().strftime('%d-%m-%Y')
+    data1=data[data['Date']==str(fill_date)]
     
     
-    return render_template('index.html')
+    return "Hello World"
 # def gen(camera):
 #     while True:
 #         #get camera frame

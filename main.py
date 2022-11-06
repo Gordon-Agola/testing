@@ -37,7 +37,7 @@ def index():
     data1=data[data['Date']==str(fill_date)]
     
     
-    return jsonify(data1)
+    return data1
 # def gen(camera):
 #     while True:
 #         #get camera frame

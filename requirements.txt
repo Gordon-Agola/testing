@@ -15,7 +15,7 @@ MarkupSafe
 matplotlib
 numpy
 opencv-contrib-python
-opencv-python-headless==4.2.0.32
+opencv-python-headless==4.6.0.66
 packaging
 pandas
 Pillow

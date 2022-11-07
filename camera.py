@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import shutil
 # defining face detector
+address = "http://192.168.0.213:8080/video"
 face_cascade=cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 ds_factor=0.6
 class VideoCamera(object):
@@ -30,6 +31,7 @@ class VideoCamera(object):
         
     def TakeImages(self,Id,name):
         self.video = cv2.VideoCapture(0)
+        self.video.open(address)
         self.check_haarcascadefile()
         columns = ['SERIAL NO.', '', 'ID', '', 'NAME']
         self.assure_path_exists("StudentDetails/")
@@ -145,6 +147,7 @@ class VideoCamera(object):
         faceCascade = cv2.CascadeClassifier(harcascadePath)
 
         cam = cv2.VideoCapture(0)
+        cam.open(address)
         font = cv2.FONT_HERSHEY_SIMPLEX
         col_names = ['Id',  'Name',  'Date',  'Time In', 'Time Out']
         exists1 = os.path.isfile("StudentDetails\StudentDetails.csv")

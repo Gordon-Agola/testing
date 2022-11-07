@@ -7,7 +7,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 # from PIL import Image
-# import cv2
+import cv2
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'

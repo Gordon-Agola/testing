@@ -1,17 +1,21 @@
 # import the necessary packages
 from flask import Flask, render_template, Response,redirect,flash,url_for,request,jsonify
 from camera import VideoCamera
-
 from datetime import datetime
-
+from flask_socketio import SocketIO, emit
+from io import StringIO 
+import io
+import base64
+import imutils
 import pandas as pd
 import numpy as np
-# from PIL import Image
+from PIL import Image
 import cv2
-
+from flask_cors import CORS,cross_origin
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
+cors = CORS(app,resources={r'/*':{"origins":'*'}})
+socketio = SocketIO(app)
 
 def hours(x):
     print(x['Time Out'])
@@ -49,7 +53,7 @@ def gen(camera):
 
 
 @app.route('/register', methods =['GET', 'POST'])
-
+@cross_origin(origins={"http://localhost:8080"})
 def register():
     msg = ''
     if request.method == 'POST' and 'fname' in request.form and 'national' in request.form:
@@ -60,7 +64,7 @@ def register():
         video.TrainImages()
     return render_template("reg_form.html")
 @app.route('/analysis', methods =['GET', 'POST'])
-
+@cross_origin(origins={"http://localhost:8080"})
 def analysis():
     msg = ''
     if request.method == 'POST' and 'fname' in request.form and 'national' in request.form:
@@ -72,7 +76,7 @@ def analysis():
     return render_template("analysis.html")
         
 @app.route('/login', methods =['GET', 'POST'])
-
+@cross_origin(origins={"http://localhost:8080"})
 def login():
     msg = ''
     if request.method == 'POST' and 'pass' in request.form and 'national' in request.form:
@@ -89,7 +93,7 @@ def login():
         
 
 @app.route('/api/attendance')
-
+@cross_origin(origins={"http://192.168.0.243:8080"})
 def attendance():
     video = VideoCamera()
     resp = video.TrackImages()
@@ -97,7 +101,7 @@ def attendance():
         return resp
     return "Attendend successfully"
 @app.route('/api/attendance/list')
-
+@cross_origin(origins={"http://192.168.0.243:8080"})
 def attendancelist():
     data = pd.read_csv("Attendance/Attendance.csv")
     fill_date = datetime.today().strftime('%d-%m-%Y')
@@ -108,7 +112,7 @@ def attendancelist():
     return jsonify(dic)
 
 @app.route('/api/attendance/analysis')
-
+@cross_origin(origins={"http://192.168.0.243:8080"})
 def attendanceanalysis():
     
     data = pd.read_csv("Attendance/Attendance.csv")
@@ -129,10 +133,59 @@ def attendanceanalysis():
     print(jsonify(dic))
     print("hello")
     return jsonify(dic)
+@app.route('/test')
+def test():
+    cap = cv2.VideoCapture("./RecordedVideo.webm")
+    if (cap.isOpened()== False):
+        msg = "No"
+    # Give a error message
+    
 
+    # Read until video is completed
+    while(cap.isOpened()):
+        msg = "Yes"
+        
+    # Capture frame-by-frame
+        ret, frame = cap.read()
+        if ret == True:
+        # Display the resulting frame
+            cv2.imshow('Frame', frame)
+            
+        # Press Q on keyboard to exit
+            if cv2.waitKey(75) & 0xFF == ord('q'):
+                break
+    
+    # Break the loop
+        else:
+            break
+    return msg
 
+@socketio.on('image')
+@cross_origin(origins={"http://192.168.0.243:8080"})
+def image(data_image):
+    sbuf = StringIO()
+    sbuf.write(data_image)
 
+    # decode and convert into image
+    b = io.BytesIO(base64.b64decode(data_image))
+    pimg = Image.open(b)
+
+    ## converting RGB to BGR, as opencv standards
+    frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+
+    # Process the image frame
+    frame = imutils.resize(frame, width=700)
+    frame = cv2.flip(frame, 1)
+    imgencode = cv2.imencode('.jpg', frame)[1]
+
+    # base64 encode
+    stringData = base64.b64encode(imgencode).decode('utf-8')
+    b64_src = 'data:image/jpg;base64,'
+    stringData = b64_src + stringData
+
+    # emit the frame back
+    emit('response_back', stringData)
  
 if __name__ == '__main__':
     # defining server ip address and port
-    app.run()
+    app.run(host="0.0.0.0",port='5000', debug=True)

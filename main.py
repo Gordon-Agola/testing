@@ -1,6 +1,7 @@
 # import the necessary packages
 from flask import Flask, render_template, Response,redirect,flash,url_for,request,jsonify
-from camera import VideoCamera
+#from camera import VideoCamera
+
 from datetime import datetime
 
 import pandas as pd

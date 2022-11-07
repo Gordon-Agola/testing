@@ -1,5 +1,5 @@
 # import the necessary packages
-import cv2,os,csv
+import cv2
 import numpy as np
 from PIL import Image
 import datetime

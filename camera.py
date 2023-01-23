@@ -7,7 +7,7 @@ import time
 import pandas as pd
 import shutil
 # defining face detector
-address = "http://192.168.0.213:8080/video"
+
 face_cascade=cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 ds_factor=0.6
 class VideoCamera(object):
@@ -18,6 +18,7 @@ class VideoCamera(object):
     # def __del__(self):
     #     #releasing camera
     #     self.video.release()
+    
     def assure_path_exists(self,path):
         dir = os.path.dirname(path)
         if not os.path.exists(dir):
@@ -31,7 +32,7 @@ class VideoCamera(object):
         
     def TakeImages(self,Id,name):
         self.video = cv2.VideoCapture(0)
-        self.video.open(address)
+        
         self.check_haarcascadefile()
         columns = ['SERIAL NO.', '', 'ID', '', 'NAME']
         self.assure_path_exists("StudentDetails/")
@@ -71,7 +72,7 @@ class VideoCamera(object):
                     # display the frame
                     cv2.imshow('Taking Images', img)
                 # wait for 100 miliseconds
-                if cv2.waitKey(100) & 0xFF == ord('q'):
+                if cv2.waitKey(50) & 0xFF == ord('q'):
                     break
                 # break if the sample number is morethan 100
                 elif sampleNum > 100:
@@ -147,9 +148,9 @@ class VideoCamera(object):
         faceCascade = cv2.CascadeClassifier(harcascadePath)
 
         cam = cv2.VideoCapture(0)
-        cam.open(address)
+        
         font = cv2.FONT_HERSHEY_SIMPLEX
-        col_names = ['Id',  'Name',  'Date',  'Time In', 'Time Out']
+        col_names = ['Id',  'Name',  'Date',  'Time In', 'Time Out','Overtime']
         exists1 = os.path.isfile("StudentDetails\StudentDetails.csv")
         if exists1:
             df = pd.read_csv("StudentDetails\StudentDetails.csv")
@@ -175,7 +176,7 @@ class VideoCamera(object):
                     ID = ID[1:-1]
                     bb = str(aa)
                     bb = bb[2:-2]
-                    attendance = [str(ID), bb,  str(date),  str(timeStamp),' ']
+                    attendance = [str(ID), bb,  str(date),  str(timeStamp),' ',' ']
 
                 else:
                     Id = 'Unknown'
@@ -204,6 +205,18 @@ class VideoCamera(object):
                             break
                         else:
                             df.loc[index,'Time Out'] = str(timeStamp)
+                            t1 = datetime.datetime.strptime(str(row['Time In']), "%H:%M:%S")
+            
+            
+                            t2 = datetime.datetime.strptime(str(timeStamp), "%H:%M:%S")
+                                
+
+                                # get difference
+                            delta = t2 - t1
+                            seconds = delta.total_seconds() % (24 * 3600)
+                            hour = seconds // 3600
+                            
+                            df.loc[index,'Overtime'] = str(hour-9)
                             con = 1
                             break
                 if(con==1):

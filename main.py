@@ -18,7 +18,7 @@ cors = CORS(app,resources={r'/*':{"origins":'*'}})
 socketio = SocketIO(app)
 
 def hours(x):
-    print(x['Time Out'])
+    
     if(len(str(x['Time Out']))>5 ):
         t1 = datetime.strptime(str(x['Time In']), "%H:%M:%S")
             
@@ -53,18 +53,19 @@ def gen(camera):
 
 
 @app.route('/register', methods =['GET', 'POST'])
-@cross_origin(origins={"http://localhost:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def register():
     msg = ''
-    if request.method == 'POST' and 'fname' in request.form and 'national' in request.form:
-        name= request.form['fname']
-        id= request.form['national']
+    if request.method == 'POST':
+        name= request.get_json().get("fname")
+        id= request.get_json().get("national")
         video = VideoCamera()
         video.TakeImages(id,name)
         video.TrainImages()
-    return render_template("reg_form.html")
+        return "Name: "+str(name)+"\nID: "+str(id)
+    return "not correct"
 @app.route('/analysis', methods =['GET', 'POST'])
-@cross_origin(origins={"http://localhost:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def analysis():
     msg = ''
     if request.method == 'POST' and 'fname' in request.form and 'national' in request.form:
@@ -76,7 +77,7 @@ def analysis():
     return render_template("analysis.html")
         
 @app.route('/login', methods =['GET', 'POST'])
-@cross_origin(origins={"http://localhost:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def login():
     msg = ''
     if request.method == 'POST' and 'pass' in request.form and 'national' in request.form:
@@ -93,7 +94,7 @@ def login():
         
 
 @app.route('/api/attendance')
-@cross_origin(origins={"http://192.168.0.243:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def attendance():
     video = VideoCamera()
     resp = video.TrackImages()
@@ -101,7 +102,7 @@ def attendance():
         return resp
     return "Attendend successfully"
 @app.route('/api/attendance/list')
-@cross_origin(origins={"http://192.168.0.243:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def attendancelist():
     data = pd.read_csv("Attendance/Attendance.csv")
     fill_date = datetime.today().strftime('%d-%m-%Y')
@@ -111,9 +112,20 @@ def attendancelist():
     print("hello")
     return jsonify(dic)
 
+@app.route('/api/filter/attendance/list')
+@cross_origin(origins={"http://192.168.0.28:8080"})
+def filterattendancelist():
+    data = pd.read_csv("Attendance/Attendance.csv")
+    dic = data.to_dict('records')
+    
+    return jsonify(dic)
+
 @app.route('/api/attendance/analysis')
-@cross_origin(origins={"http://192.168.0.243:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def attendanceanalysis():
+    date= request.get_json().get("date")
+    
+    print(date)
     
     data = pd.read_csv("Attendance/Attendance.csv")
     if(data.shape[0] >0):
@@ -130,8 +142,7 @@ def attendanceanalysis():
     dic = {}
     dic["Name"] =data['Name'].tolist()
     dic["Hour"] = data['Hour'].tolist()
-    print(jsonify(dic))
-    print("hello")
+    
     return jsonify(dic)
 @app.route('/test')
 def test():
@@ -161,7 +172,7 @@ def test():
     return msg
 
 @socketio.on('image')
-@cross_origin(origins={"http://192.168.0.243:8080"})
+@cross_origin(origins={"http://192.168.0.28:8080"})
 def image(data_image):
     sbuf = StringIO()
     sbuf.write(data_image)

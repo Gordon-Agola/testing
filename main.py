@@ -1,5 +1,5 @@
 # import the necessary packages
-from flask import Flask, render_template, Response,redirect,flash,url_for,request,jsonify
+from flask import Flask, render_template, Response,redirect,url_for,request,jsonify
 from camera import VideoCamera
 from datetime import datetime
 from flask_socketio import SocketIO, emit
@@ -16,6 +16,20 @@ app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 cors = CORS(app,resources={r'/*':{"origins":'*'}})
 socketio = SocketIO(app)
+
+@app.route('/api/stream', methods=['POST'])
+@cross_origin(origins={"http://localhost:8080"})
+def stream():
+    # Receive the video stream from the frontend
+    video = request.data
+    # Use OpenCV to process the video frame
+    image = cv2.imdecode(np.frombuffer(video, dtype=np.uint8), -1)
+    # Perform face detection, for example
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+    # ...
+    return '', 200
 
 def hours(x):
     
@@ -53,7 +67,7 @@ def gen(camera):
 
 
 @app.route('/register', methods =['GET', 'POST'])
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def register():
     msg = ''
     if request.method == 'POST':
@@ -65,7 +79,7 @@ def register():
         return "Name: "+str(name)+"\nID: "+str(id)
     return "not correct"
 @app.route('/analysis', methods =['GET', 'POST'])
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def analysis():
     msg = ''
     if request.method == 'POST' and 'fname' in request.form and 'national' in request.form:
@@ -77,7 +91,7 @@ def analysis():
     return render_template("analysis.html")
         
 @app.route('/login', methods =['GET', 'POST'])
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def login():
     msg = ''
     if request.method == 'POST' and 'pass' in request.form and 'national' in request.form:
@@ -94,7 +108,7 @@ def login():
         
 
 @app.route('/api/attendance')
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def attendance():
     video = VideoCamera()
     resp = video.TrackImages()
@@ -102,18 +116,17 @@ def attendance():
         return resp
     return "Attendend successfully"
 @app.route('/api/attendance/list')
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def attendancelist():
     data = pd.read_csv("Attendance/Attendance.csv")
     fill_date = datetime.today().strftime('%d-%m-%Y')
     data1=data[data['Date']==str(fill_date)]
     dic = data1.to_dict('records')
-    print(jsonify(dic))
-    print("hello")
+    
     return jsonify(dic)
 
 @app.route('/api/filter/attendance/list')
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def filterattendancelist():
     data = pd.read_csv("Attendance/Attendance.csv")
     dic = data.to_dict('records')
@@ -121,11 +134,9 @@ def filterattendancelist():
     return jsonify(dic)
 
 @app.route('/api/attendance/analysis')
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def attendanceanalysis():
-    date= request.get_json().get("date")
     
-    print(date)
     
     data = pd.read_csv("Attendance/Attendance.csv")
     if(data.shape[0] >0):
@@ -144,6 +155,32 @@ def attendanceanalysis():
     dic["Hour"] = data['Hour'].tolist()
     
     return jsonify(dic)
+
+
+@app.route('/api/attendance/analysis/time')
+@cross_origin(origins={"http://192.168.0.126:8080"})
+def timeManagement():
+    
+    
+    data = pd.read_csv("Attendance/Attendance.csv")
+    if(data.shape[0] >0):
+        data['Overtime'] = data['Overtime'].replace(" ","-8.0")
+        data['Overtime'] = data['Overtime'].astype('float')
+        data = data[['Name','Overtime']].groupby('Name',as_index=False).sum()
+       
+    else:
+        # initialize list of lists
+        data = [['Non came', 0], ['nick', 0]]
+        
+        # Create the pandas DataFrame
+        data = pd.DataFrame(data, columns=['Name', 'Overtime'])
+        print("no data")    
+    dic = {}
+    dic["Name"] =data['Name'].tolist()
+    dic["Overtime"] = data['Overtime'].tolist()
+    
+    return jsonify(dic)
+
 @app.route('/test')
 def test():
     cap = cv2.VideoCapture("./RecordedVideo.webm")
@@ -172,7 +209,7 @@ def test():
     return msg
 
 @socketio.on('image')
-@cross_origin(origins={"http://192.168.0.28:8080"})
+@cross_origin(origins={"http://192.168.0.126:8080"})
 def image(data_image):
     sbuf = StringIO()
     sbuf.write(data_image)
